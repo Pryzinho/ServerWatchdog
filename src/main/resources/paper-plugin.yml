@@ -1,0 +1,17 @@
+name: pServerWatchdog
+version: '${version}'
+main: br.pry.watchdog.WatchdogMain
+api-version: '1.20'
+authors: [Pry]
+description: Encontra possiveis suspeitos
+website: github.com/Pryzinho
+permissions:
+  watchdog.group.developer:
+    description: 'Permissão para usar /plugin e etc...'
+    default: op
+  watchdog.group.equipe:
+    description: 'Permissão para saber potenciais suspeitos'
+    default: op
+commands:
+  swatchdog:
+    description: Permite gerenciar o plugin.

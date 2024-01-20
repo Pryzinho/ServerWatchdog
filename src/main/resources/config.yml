@@ -1,0 +1,15 @@
+discord:
+  webhook: "WEBHOOK_URL"
+# As mensagem do plugin suportam texto coloridos apenas no formato novo (MiniMessage - Kyori Adventure)
+messages:
+  no-permission: "<aqua>Sem permissão"
+  no-permission-sound:
+    id: ENTITY_VILLAGER_NO
+    volume: 1
+    pitch: 1
+  # Local Placeholder: {target} - Suspeito que acordou o Watchdog, {command} - Comando utilizado pelo suspeito
+  online-bark: "<green>O jogador <yellow>{target} <green>tentou usar o comando<white>:<gray>{command}"
+  bark-sound:
+    id: ENTITY_PLAYER_LEVELUP
+    volume:
+    pitch:
