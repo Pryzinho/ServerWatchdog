@@ -11,5 +11,5 @@ messages:
   online-bark: "<green>O jogador <yellow>{target} <green>tentou usar o comando<white>:<gray>{command}"
   bark-sound:
     id: ENTITY_PLAYER_LEVELUP
-    volume:
-    pitch:
+    volume: 1
+    pitch: 1
