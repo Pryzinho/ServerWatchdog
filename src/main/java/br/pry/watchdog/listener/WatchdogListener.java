@@ -4,6 +4,7 @@ import br.pry.watchdog.WatchdogMain;
 import br.pry.watchdog.utils.Color;
 import br.pry.watchdog.utils.DiscordWebhook;
 import org.bukkit.Bukkit;
+import org.bukkit.SoundCategory;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -36,10 +37,10 @@ public class WatchdogListener implements Listener {
                 if (!p.hasPermission("watchdog.group.developer")) {
                     event.setCancelled(true);
                     p.sendMessage(Color.translate(instance.getConfigManager().getString("messages.no-permission")));
-                    Bukkit.dispatchCommand(Bukkit.getConsoleSender(), playsoundByConfig("messages.no-permission-sound", p));
+                    playsoundByConfig("messages.no-permission-sound", p);
                     Bukkit.getOnlinePlayers().stream().filter(t -> t.hasPermission("watchdog.group.equipe")).forEach(t -> {
-                        t.sendMessage(Color.translate("<green>O jogador <yellow>" + p.getName() + " <green>tentou usar o comando<white>:<gray> " + arrCommand[0]));
-                        Bukkit.dispatchCommand(Bukkit.getConsoleSender(), playsoundByConfig("messages.bark-sound", t));
+                        t.sendMessage(Color.translate(instance.getConfigManager().getString("messages.online-bark").replace("{target}", p.getName()).replace("{command}", arrCommand[0])));
+                        playsoundByConfig("messages.bark-sound", t);
                     });
                     if (instance.isDiscordEnabled()) {
                         dw.addEmbed(new DiscordWebhook.EmbedObject()
@@ -59,16 +60,12 @@ public class WatchdogListener implements Listener {
         });
     }
 
-    private String playsoundByConfig(String path, Player target) {
+    private void playsoundByConfig(String path, Player target) {
         String soundId = instance.getConfigManager().getString(path + ".id");
-        String volume = instance.getConfigManager().getString(path + ".volume");
-        String pitch = instance.getConfigManager().getString(path + ".pitch");
-
-        int x = target.getLocation().getBlockX();
-        int y = target.getLocation().getBlockY();
-        int z = target.getLocation().getBlockZ();
-
-        return String.format("playsound %s master %s %d %d %d %s %s", soundId, target.getName(), x, y, z, volume, pitch);
+        float volume = (float) instance.getConfigManager().getDouble(path + ".volume");
+        float pitch = (float) instance.getConfigManager().getDouble(path + ".pitch");
+        String category = instance.getConfigManager().getString(path + ".category").toUpperCase();
+        target.playSound(target, soundId, SoundCategory.valueOf(category), volume, pitch);
     }
 
 }

@@ -51,7 +51,7 @@ public class WatchdogCommand implements CommandExecutor {
         }
         if (args[0].equalsIgnoreCase("reload")) {
             instance.reload();
-            sender.sendMessage("<aqua>Todas as configurações foram recarregadas.");
+            sender.sendMessage(Color.translate("<aqua>Todas as configurações foram recarregadas."));
             return true;
         }
         sendCommandUsage(sender);

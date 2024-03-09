@@ -14,7 +14,6 @@ public final class WatchdogMain extends JavaPlugin {
     private DiscordWebhook dw;
     private boolean discordEnabled;
 
-    /* To-do: ajeitar a maneira de tocar o som, pq atualemnte eu uso comando e isso aparece feiao no console*/
     @Override
     public void onEnable() {
         getLogger().log(Level.INFO, "Acordando o cão de guarda");

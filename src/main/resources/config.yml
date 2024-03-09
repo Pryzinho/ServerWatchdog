@@ -2,15 +2,18 @@ discord:
   enabled: true
   webhook: "WEBHOOK_URL"
 # As mensagens do plugin suportam textos coloridos apenas no formato novo (MiniMessage - Kyori Adventure)
+# Informações sobre categoria de som, pesquise por SoundCategory na Javadocs do papermc.
 messages:
   no-permission: "<aqua>Sem permissão"
   no-permission-sound:
-    id: 'minecraft:entity.villager.no'
+    id: 'entity.villager.no'
+    category: MASTER
     volume: 1
     pitch: 1
   # Local Placeholder: {target} - Suspeito que acordou o Watchdog, {command} - Comando utilizado pelo suspeito
-  online-bark: "<green>O jogador <yellow>{target} <green>tentou usar o comando<white>:<gray>{command}"
+  online-bark: "<green>O jogador <yellow>{target} <green>tentou usar o comando<white>: <gray>{command}"
   bark-sound:
-    id: 'minecraft:entity.player.levelup'
+    id: 'entity.player.levelup'
+    category: MASTER
     volume: 1
     pitch: 1
