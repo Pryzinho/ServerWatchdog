@@ -7,15 +7,17 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
+import java.util.Objects;
 
 public class WatchdogCommand implements CommandExecutor {
-    private WatchdogMain instance;
+    private final WatchdogMain instance;
 
     public WatchdogCommand(WatchdogMain instance) {
         this.instance = instance;
-        instance.getCommand("swatchdog").setExecutor(this);
+        Objects.requireNonNull(instance.getCommand("swatchdog")).setExecutor(this);
     }
 
     @Override
@@ -24,12 +26,16 @@ public class WatchdogCommand implements CommandExecutor {
             sender.sendMessage(Color.translate(instance.getConfigManager().getString("messages.no-permission")));
             return true;
         }
+        @Nullable DiscordWebhook dw = instance.getDiscordWebhook();
         if (args.length != 1) {
             sendCommandUsage(sender);
             return true;
         }
-        DiscordWebhook dw = instance.getDiscordWebhook();
         if (args[0].equalsIgnoreCase("debug")) {
+            if (!instance.isDiscordEnabled()) {
+                sender.sendMessage(Color.translate("<red>A coleira do cão de guarda não está conectada ao Discord, verifique a configuração."));
+                return true;
+            }
             dw.addEmbed(new DiscordWebhook.EmbedObject()
                     .setTitle("Serviço veterinário")
                     .setDescription(sender.getName() + " usou o comando de debug do Watchdog.")
@@ -37,15 +43,15 @@ public class WatchdogCommand implements CommandExecutor {
             );
             try {
                 dw.execute();
-                sender.sendMessage("Debugado com sucesso, verifique o Discord.");
+                sender.sendMessage(Color.translate("<green>Debugado com sucesso, verifique o Discord."));
             } catch (IOException e) {
-                sender.sendMessage(Color.translate("&cOcorreu um erro ao utilizar o debug. (IoException)"));
+                sender.sendMessage(Color.translate("<red>Ocorreu um erro ao utilizar o debug. (IoException)"));
             }
             return true;
         }
         if (args[0].equalsIgnoreCase("reload")) {
-            instance.reloadConfig();
-            instance.setDiscordWebhook(new DiscordWebhook(instance.getConfigManager().getString("discord.webhook")));
+            instance.reload();
+            sender.sendMessage("<aqua>Todas as configurações foram recarregadas.");
             return true;
         }
         sendCommandUsage(sender);
@@ -54,7 +60,8 @@ public class WatchdogCommand implements CommandExecutor {
 
     private void sendCommandUsage(CommandSender s) {
         s.sendMessage(" ");
-        s.sendMessage("/swatchdog debug - Testa a conexão com o Webhook.");
-        s.sendMessage("/swatchdog reload - Recarrega as configurações.");
+        s.sendMessage(Color.translate("<gray>/swatchdog debug<white> - <green>Testa a conexão com o Webhook."));
+        s.sendMessage(Color.translate("<gray>/swatchdog reload<white> - <green>Recarrega as configurações."));
+        s.sendMessage(" ");
     }
 }

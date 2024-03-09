@@ -4,7 +4,7 @@ import br.pry.watchdog.WatchdogMain;
 import br.pry.watchdog.utils.Color;
 import br.pry.watchdog.utils.DiscordWebhook;
 import org.bukkit.Bukkit;
-import org.bukkit.Sound;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -19,38 +19,56 @@ public class WatchdogListener implements Listener {
     private final WatchdogMain instance;
     private final DiscordWebhook dw;
 
-    public WatchdogListener(WatchdogMain instance){
+    public WatchdogListener(WatchdogMain instance) {
         this.instance = instance;
         this.dw = instance.getDiscordWebhook();
         instance.getServer().getPluginManager().registerEvents(this, instance);
     }
+
+    private final List<String> commands = Arrays.asList("?", "pl", "about", "version", "ver", "plugins", "bukkit:?", "bukkit:pl", "bukkit:about", "bukkit:version", "bukkit:ver", "bukkit:plugins", "minecraft:pl", "minecraft:plugins", "minecraft:about", "minecraft:version", "minecraft:ver");
+
     @EventHandler(priority = EventPriority.HIGH)
     public void onCommandUse(PlayerCommandPreprocessEvent event) {
-        List<String> commands = Arrays.asList("?", "pl", "about", "version", "ver", "plugins", "bukkit:?", "bukkit:pl", "bukkit:about", "bukkit:version", "bukkit:ver", "bukkit:plugins", "minecraft:pl", "minecraft:plugins", "minecraft:about", "minecraft:version", "minecraft:ver");
+        Player p = event.getPlayer();
         commands.forEach(all -> {
             String[] arrCommand = event.getMessage().toLowerCase().split(" ", 2);
             if (arrCommand[0].equalsIgnoreCase("/" + all.toLowerCase())) {
-                if (!event.getPlayer().hasPermission("watchdog.group.developer")) {
+                if (!p.hasPermission("watchdog.group.developer")) {
                     event.setCancelled(true);
-                    event.getPlayer().sendMessage(Color.translate(instance.getConfigManager().getString("messages.no-permission")));
-                    event.getPlayer().playSound(event.getPlayer(), Sound.valueOf(instance.getConfigManager().getString("messages.no-permission-sound")), 1f, 1f);
-                    Bukkit.getOnlinePlayers().stream().filter(p -> p.hasPermission("watchdog.group.equipe")).forEach(t -> {
-                        t.sendMessage(Color.translate("<green>O jogador <yellow>" + event.getPlayer().getName() + " <green>tentou usar o comando<white>:<gray> " + arrCommand[0]));
-                        t.playSound(t, Sound.ENTITY_PLAYER_LEVELUP, 1f, 1f);
+                    p.sendMessage(Color.translate(instance.getConfigManager().getString("messages.no-permission")));
+                    Bukkit.dispatchCommand(Bukkit.getConsoleSender(), playsoundByConfig("messages.no-permission-sound", p));
+                    Bukkit.getOnlinePlayers().stream().filter(t -> t.hasPermission("watchdog.group.equipe")).forEach(t -> {
+                        t.sendMessage(Color.translate("<green>O jogador <yellow>" + p.getName() + " <green>tentou usar o comando<white>:<gray> " + arrCommand[0]));
+                        Bukkit.dispatchCommand(Bukkit.getConsoleSender(), playsoundByConfig("messages.bark-sound", t));
                     });
-                    dw.addEmbed(new DiscordWebhook.EmbedObject()
-                            .setTitle("Novo suspeito em potencial!")
-                            .setDescription("O jogador " + event.getPlayer().getName() + "(" + event.getPlayer().getAddress() + ") tentou usar o comando: " + arrCommand[0])
-                            .setColor(java.awt.Color.RED)
-                    );
-                    try {
-                        dw.execute();
-                    } catch (IOException e) {
-                        instance.getLogger().log(Level.SEVERE, "Falha ao enviar um suspeito para o discord. Registrando em log.");
-                        instance.getServer().getConsoleSender().sendMessage("O jogador " + event.getPlayer().getName() + " tentou usar o comando: " + arrCommand[0]);
+                    if (instance.isDiscordEnabled()) {
+                        dw.addEmbed(new DiscordWebhook.EmbedObject()
+                                .setTitle("Novo suspeito em potencial!")
+                                .setDescription("O jogador " + p.getName() + "(" + p.getAddress().getHostString() + ") tentou usar o comando: " + arrCommand[0])
+                                .setColor(java.awt.Color.RED)
+                        );
+                        try {
+                            dw.execute();
+                        } catch (IOException e) {
+                            instance.getLogger().log(Level.SEVERE, "Falha ao enviar um suspeito para o discord. Mandando no console e adiando envio...");
+                            instance.getServer().getConsoleSender().sendMessage("O jogador " + p.getName() + " tentou usar o comando: " + arrCommand[0]);
+                        }
                     }
                 }
             }
         });
     }
+
+    private String playsoundByConfig(String path, Player target) {
+        String soundId = instance.getConfigManager().getString(path + ".id");
+        String volume = instance.getConfigManager().getString(path + ".volume");
+        String pitch = instance.getConfigManager().getString(path + ".pitch");
+
+        int x = target.getLocation().getBlockX();
+        int y = target.getLocation().getBlockY();
+        int z = target.getLocation().getBlockZ();
+
+        return String.format("playsound %s master %s %d %d %d %s %s", soundId, target.getName(), x, y, z, volume, pitch);
+    }
+
 }
